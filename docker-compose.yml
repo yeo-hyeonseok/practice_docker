@@ -4,22 +4,34 @@
 # - 컨테이너 간 네트워크 설정
 # - 도커 컴포즈에서 실행되는 컨테이너들은 자동으로 하나의 네트워크에서 실행됨
 # - 데이터를 영구적으로 보관할 수 있는 volume도 자동적으로 생성되고 연결됨
-# - services: 도커 컴포즈에서 실행되는 하나의 프로그램 단위, 컨테이너를 어떤 식으로 실행할 지에 대한 일종의 가이드라인
-# - depends_on: 몇몇 서비스는 선행되는 서비스가 있어야 정상적으로 실행될 수 있음. 이때 depends_on을 설정해주면 컨테이너의 실행 순서를 제어 가능
 
+# services
+# - 도커 컴포즈에서 실행되는 하나의 프로그램 단위, 컨테이너를 어떤 식으로 실행할 지에 대한 일종의 가이드라인임
 services:
   webserver:
     image: hello:latest
     container_name: hello-container
     ports:
       - 3000:3000
+    # 몇몇 서비스는 선행되는 서비스가 있어야 정상적으로 실행될 수 있음. 이때 depends_on을 설정해주면 컨테이너의 실행 순서를 제어 가능
     depends_on:
       - db
+    networks:
+      - mynet1
+      - mynet2
+
   nginx:
     image: nginx:1
     container_name: nginx-container
     ports:
       - 80:80
+    # 비정상적으로 컨테이너 종료 시 자동으로 재실행, 도커 desktop inspect 항목에서 재시작 횟수 확인 가능
+    restart: always
+    depends_on:
+      - webserver
+    networks:
+      - mynet1
+
   db:
     image: postgres:17-alpine
     container_name: db-container
@@ -28,3 +40,22 @@ services:
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    networks:
+      - mynet2
+    volumes:
+      - vol:/var/lib/postgresql/data
+
+# networks
+# - 도커 컴포즈에서 자동으로 만들어주는 것 말고 내가 직접 네트워크를 만들고 싶다면, 최상위 항목에 networks 작성
+# - 하나의 컨테이너는 여러 네트워크에 속할 수 있음
+networks:
+  mynet1:
+  mynet2:
+
+# volumes
+# - 마찬가지로 볼륨도 설정하고 싶다면, 최상위 항목에 사용하고자 하는 볼륭 이름을 작성하면 됨s
+# - 만약 기존에 만들어둔 볼륨이 있다면 'external: true' 속성 추가하기, 없으면 새로 만들어줌
+# - 내가 만든 폴더를 볼륨으로 사용하고 싶다면, 즉 바인드 마운트를 하고 싶다면, 사용하고자 하는 컨테이너에 볼륨 이름 대신 해당 폴더의 경로만 작성해주면 됨
+volumes:
+  vol:
+    external: true
