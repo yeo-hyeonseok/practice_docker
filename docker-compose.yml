@@ -13,6 +13,8 @@ services:
     container_name: hello-container
     ports:
       - 3000:3000
+    # 서비스 실행 시 빌드 먼저 하기, 대신 명령어 입력 시 --build 키워드 추가해야 함
+    build: .
     # 몇몇 서비스는 선행되는 서비스가 있어야 정상적으로 실행될 수 있음. 이때 depends_on을 설정해주면 컨테이너의 실행 순서를 제어 가능
     depends_on:
       - db
