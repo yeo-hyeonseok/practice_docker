@@ -15,7 +15,21 @@ services:
       - 3000:3000
     # 서비스 실행 시 빌드 먼저 하기, 대신 명령어 입력 시 --build 키워드 추가해야 함
     build: .
-    # 몇몇 서비스는 선행되는 서비스가 있어야 정상적으로 실행될 수 있음. 이때 depends_on을 설정해주면 컨테이너의 실행 순서를 제어 가능
+    # 서비스마다 CMD 명령어를 덮어쓰기 할 수도 있음
+    # command: ["nodemon", "server.js"]
+    # 파일이 변경되었을 때, 이를 컨테이너에 실시간으로 적용하고 싶다면 watch 옵션 사용
+    # - 참고로 build 옵션이 있어야 제대로 동작함
+    # - 서비스 실행 시 --watch 키워드 추가해야 함
+    develop:
+      watch:
+        # - path 경로의 파일에서 발생한 변경사항을 컨테이너 app 폴더에 복사하고 재시작
+        - action: sync+restart
+          path: .
+          target: /app
+        # - path 경로의 파일에서 변경사항이 발생했을 때 자동으로 빌드
+        - action: rebuild
+          path: package.json
+    # 몇몇 서비스는 선행되는 서비스가 있어야 정상적으로 실행될 수 있음. 이때 depends_on을 설정해주 컨테이너의 실행 순서를 제어 가능
     depends_on:
       - db
     networks:

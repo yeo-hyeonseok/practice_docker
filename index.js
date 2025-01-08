@@ -2,11 +2,9 @@ const express = require("express");
 
 const app = express();
 
-app.listen(3000, () => console.log("3000번 포트 연결 중"));
+app.get("/", (_, res) => res.send("DOCKEREKCOD!!!"));
 
-const server = app.get("/", (_, res) => {
-  res.send("DOCKEREKCOD");
-});
+const server = app.listen(3000, () => console.log("3000번 포트 연결 중..."));
 
 // graceful shutdown
 // - 서버 종료 시 발생할 수 있는 문제를 방지하기 위해 서버 종료 직전 미리 정의된 정리 작업을 수행하는 것
